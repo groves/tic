@@ -6,7 +6,7 @@
   <version>0.1-SNAPSHOT</version>
   <packaging>war</packaging>
   <name>tic</name>
-  <inceptionYear>2007</inceptionYear>
+  <inceptionYear>2008</inceptionYear>
   <properties>
     <scala.version>2.7.1</scala.version>
   </properties>
