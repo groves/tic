@@ -17,16 +17,14 @@ class Tic {
   }
 
   private def createActivity(params: Map[String, String]) = {
-      println("Create activity being called!")
       val activity = Activity.create
-      activity.name(params("name"))
+      activity.name(urlDecode(params("name")))
       activity.save()
       makeActiveRow(activity)
   }
 
   def entry = SHtml.jsonForm(json, <head>{JsCmds.Script(json.jsCmd)}</head>
       <input name="name" type="text" />
-      <input name="category" type="text"/>
       <input type="submit" value="Start Activity"/>
     )
 
