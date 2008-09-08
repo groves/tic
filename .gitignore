@@ -1,3 +1,6 @@
 derby.log
 lift_example
 target
+.classpath
+.project
+.settings
