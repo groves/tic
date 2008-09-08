@@ -5,38 +5,33 @@ import net.liftweb.http._
 import net.liftweb.sitemap._
 import net.liftweb.sitemap.Loc._
 import Helpers._
-import net.liftweb.mapper.{DB, ConnectionManager, Schemifier, DefaultConnectionIdentifier, ConnectionIdentifier}
 import java.sql.{Connection, DriverManager}
 import sevorg.tic.model._
  
 /**
-  * A class that's instantiated early and run.  It allows the application
-  * to modify lift's environment
+  * A class that's instantiated early and run.  It allows the application to modify lift's
+  * environment.
   */
 class Boot {
   def boot {
-    if (!DB.jndiJdbcConnAvailable_?) DB.defineConnectionManager(DefaultConnectionIdentifier, DBVendor)
     // where to search snippet
     LiftRules.addToPackages("sevorg.tic")     
-    Schemifier.schemify(true, Log.infoF _, Activity)
 
-    // Build SiteMap
-    val entries = Menu(Loc("Home", "/", "Home")) :: Nil
-    LiftRules.setSiteMap(SiteMap(entries:_*))
+    // Set up a LoanWrapper to automatically instantiate and tear down the EntityManager on a
+    // per-request basis
+    S.addAround(List(new LoanWrapper {
+        def apply[T] (f : => T): T = {
+            val em = Model.factory.createEntityManager();
+            
+            // Add EM into S scope
+            Model.emVar.set(em)
+	  
+            try {
+              f
+            } finally {
+              em.close()
+            }
+        }
+      }));
   }
 }
-
-
-object DBVendor extends ConnectionManager {
-  def newConnection(name: ConnectionIdentifier): Can[Connection] = {
-    try {
-      Class.forName("org.apache.derby.jdbc.EmbeddedDriver")
-      val dm = DriverManager.getConnection("jdbc:derby:lift_example;create=true")
-      Full(dm)
-    } catch {
-      case e : Exception => e.printStackTrace; Empty
-    }
-  }
-  def releaseConnection(conn: Connection) {conn.close}
-}
-

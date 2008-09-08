@@ -4,22 +4,23 @@ import scala.xml.{Group, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
 import net.liftweb.http.js.{JsCmd, JsCmds}
+import net.liftweb.http.js.jquery.JqJsCmds
 import net.liftweb.util.Helpers._
 
-import sevorg.tic.model.Activity
+import sevorg.tic.model.{Activity, Model}
+import sevorg.tic.model.Model.{setToWrapper,listToWrapper}
 
 class Tic {
   object json extends JsonHandler {
-    def apply(in: Any): JsCmd = JsCmds.PrependHtml("active", in match {
+    def apply(in: Any): JsCmd = JqJsCmds.PrependHtml("active", in match {
         case JsonCmd("processForm", _, p: Map[String, String], _) => createActivity(p)
         case x => <tr><td>Didn't understand message! {x}</td></tr>
       })
   }
 
   private def createActivity(params: Map[String, String]) = {
-      val activity = Activity.create
-      activity.name(urlDecode(params("name")))
-      activity.save()
+      val activity = new Activity(urlDecode(params("name")))
+      Model.em.persist(activity)
       makeActiveRow(activity)
   }
 
@@ -28,7 +29,10 @@ class Tic {
       <input type="submit" value="Start Activity"/>
     )
 
-  def active: NodeSeq = Activity.findAll.flatMap(makeActiveRow)
+  def active: NodeSeq = {
+      val activities = Model.em.createQuery("from Activity").getResultList.asInstanceOf[java.util.List[Activity]]
+      activities.flatMap(makeActiveRow)
+  }
 
   private def makeActiveRow(act: Activity) = bind("f",
     <tr>
@@ -38,5 +42,5 @@ class Tic {
       <td>
         <f:start>10:30</f:start>
       </td>
-    </tr>, "name" -> act.name, "start" -> (toInternetDate(act.start.is)))
+    </tr>, "name" -> Text(act.getName), "start" -> Text(toInternetDate(act.getStart)))
 }
