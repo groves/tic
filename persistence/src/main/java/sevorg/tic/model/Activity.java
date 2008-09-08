@@ -25,6 +25,11 @@ public class Activity
         this.start = new Date();
     }
 
+    public void stop ()
+    {
+        setStop(new Date());
+    }
+
     public long getId ()
     {
         return id;
