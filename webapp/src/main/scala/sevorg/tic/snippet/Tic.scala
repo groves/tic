@@ -30,26 +30,18 @@ class Tic {
       <input type="submit" value="Start Activity"/>
     )
 
-  def active: NodeSeq = {
-      val activities = Model.em.createQuery("SELECT a FROM Activity a WHERE a.stop IS NULL").getResultList.asInstanceOf[java.util.List[Activity]]
-      activities.flatMap(makeRow)
-  }
+  def active: NodeSeq =  all("a.stop IS NULL").flatMap(makeRow)
 
-  def inactive: NodeSeq = {
-      val activities = Model.em.createQuery("SELECT a FROM Activity a WHERE a.stop IS NOT NULL").getResultList.asInstanceOf[java.util.List[Activity]]
-      activities.flatMap(makeRow)
-  }
+  def inactive: NodeSeq = all("a.stop IS NOT NULL").flatMap(makeRow)
 
-  def stop(id: long) = {
-      val ending = byId(id)
+  def stop(ending: Activity) = {
       intransaction { ending.stop(); Model.em.merge(ending) }
-      JqJsCmds.Hide(id.toString) & JqJsCmds.PrependHtml("inactive", makeRow(ending))
+      JqJsCmds.Hide(ending.getId.toString) & JqJsCmds.PrependHtml("inactive", makeRow(ending))
   }
 
-  def restart(id: long) = {
-      val restarting = byId(id)
+  def restart(restarting: Activity) = {
       intransaction { restarting.setStop(null); Model.em.merge(restarting) }
-      JqJsCmds.Hide(id.toString) & JqJsCmds.PrependHtml("active", makeRow(restarting))
+      JqJsCmds.Hide(restarting.getId.toString) & JqJsCmds.PrependHtml("active", makeRow(restarting))
   }
 
   private def intransaction(f: Unit) = {
@@ -60,6 +52,8 @@ class Tic {
   }
 
   private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
+
+  private def all(clause: String) =  Model.em.createQuery("SELECT a FROM Activity a WHERE " + clause).getResultList.asInstanceOf[java.util.List[Activity]]
 
   val todayFormatter = new SimpleDateFormat("HH:mm")
   val earlierFormatter = new SimpleDateFormat("MM/dd HH:mm")
@@ -74,8 +68,8 @@ class Tic {
           <f:start>10:30</f:start>
         </td>
         <td>
-          { if(act.getStop == null) SHtml.a(() => {stop(act.getId)}, Text("Stop"))
-            else SHtml.a(() => {restart(act.getId)}, Text("Restart"))
+          { if(act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop"))
+            else SHtml.a(() => {restart(act)}, Text("Restart"))
           }
         </td>
       </tr>, "name" -> Text(act.getName), "start" -> Text(formatter.format(act.getStart)))
