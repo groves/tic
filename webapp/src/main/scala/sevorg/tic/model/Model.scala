@@ -5,8 +5,6 @@ import javax.persistence.{EntityManager,Persistence}
 import scala.collection.jcl.{BufferWrapper,SetWrapper}
 
 object Model {
-  val factory = Persistence.createEntityManagerFactory("tic");
-
   val emVar = new ThreadLocal[EntityManager];
   def em = emVar.get();
   implicit def setToWrapper[A](set : java.util.Set[A]) = new SetWrapper[A]{override def underlying = set}
