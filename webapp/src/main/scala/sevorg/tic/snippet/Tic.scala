@@ -14,7 +14,7 @@ import sevorg.tic.model.Model.{setToWrapper,listToWrapper}
 class Tic {
   object json extends JsonHandler {
     def apply(in: Any): JsCmd = JqJsCmds.PrependHtml("active", in match {
-        case JsonCmd("processForm", _, p: Map[k, v], _) => createActivity(p.asInstanceOf[Map[String, String]])
+        case JsonCmd("processForm", _, p: Map[_, _], _) => createActivity(p.asInstanceOf[Map[String, String]])
         case x => <tr><td>Didn't understand message! {x}</td></tr>
       })
   }
