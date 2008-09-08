@@ -50,14 +50,14 @@ public class Activity
         this.start = start;
     }
 
-    public Date getEnd ()
+    public Date getStop ()
     {
-        return end;
+        return stop;
     }
 
-    public void setEnd (Date end)
+    public void setStop (Date stop)
     {
-        this.end = end;
+        this.stop = stop;
     }
 
     @Id
@@ -68,5 +68,5 @@ public class Activity
 
     private Date start;
 
-    private Date end;
+    private Date stop;
 }
