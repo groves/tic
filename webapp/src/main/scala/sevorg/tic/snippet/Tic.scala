@@ -1,7 +1,6 @@
 package sevorg.tic.snippet
 
 import java.text.SimpleDateFormat
-import javax.persistence.EntityTransaction
 import scala.xml.{Group, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
@@ -22,7 +21,7 @@ class Tic {
 
   private def createActivity(params: Map[String, String]) = {
       val activity = new Activity(urlDecode(params("name")))
-      intx { Model.em.persist(activity) }
+      Model.intx { Model.em.persist(activity) }
       makeRow(activity)
   }
 
@@ -36,25 +35,13 @@ class Tic {
   def inactive: NodeSeq = all("a.stop IS NOT NULL").flatMap(makeRow)
 
   def stop(ending: Activity) = {
-      intx { ending.stop(); Model.em.merge(ending) }
+      Model.intx { ending.stop(); Model.em.merge(ending) }
       JqJsCmds.Hide(ending.getId.toString) & JqJsCmds.PrependHtml("inactive", makeRow(ending))
   }
 
   def restart(restarting: Activity) = {
-      intx { restarting.setStop(null); Model.em.merge(restarting) }
+      Model.intx { restarting.setStop(null); Model.em.merge(restarting) }
       JqJsCmds.Hide(restarting.getId.toString) & JqJsCmds.PrependHtml("active", makeRow(restarting))
-  }
-
-  private def intx(f: Unit) = withtx((tx: EntityTransaction) => {f})
-  private def withtx(f: (EntityTransaction) => Unit) = {
-    val tx = Model.em.getTransaction()
-    try { 
-      tx.begin()
-      f(tx)
-      tx.commit()
-    } catch {
-      case _ => tx.rollback()
-    }
   }
 
   private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
