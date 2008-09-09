@@ -65,10 +65,8 @@ class Tic {
       <td>{ hours + "h " + minutes + "m" }</td>
   }
 
-  val todayFormatter = new SimpleDateFormat("HH:mm")
-  val earlierFormatter = new SimpleDateFormat("MM/dd HH:mm")
+  val formatter = new SimpleDateFormat("MM/dd HH:mm")
   private def makeRow(act: Activity): NodeSeq = {
-    val formatter = if (System.currentTimeMillis - act.getStart.getTime < (1000 * 60 * 60 * 24)) todayFormatter else earlierFormatter
     <tr id={ Text(act.getId.toString) }>
       <td>{ Text(act.getName) }</td>
       <td>{ formatter.format(act.getStart) }</td>
