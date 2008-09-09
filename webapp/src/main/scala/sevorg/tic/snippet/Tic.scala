@@ -4,8 +4,12 @@ import java.text.SimpleDateFormat
 import scala.xml.{NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
-import net.liftweb.http.js.{JsCmd, JsCmds}
-import net.liftweb.http.js.jquery.JqJsCmds
+import net.liftweb.http.js.{JsCmd, JsCmds, JE}
+import JE._
+import JsCmds._
+import net.liftweb.http.js.jquery.{JqJE, JqJsCmds}
+import JqJE._
+import JqJsCmds._
 import net.liftweb.util.Helpers._
 
 import sevorg.tic.model.{Activity, Model}
@@ -13,7 +17,7 @@ import sevorg.tic.model.Model.{setToWrapper,listToWrapper}
 
 class Tic {
   object json extends JsonHandler {
-    def apply(in: Any): JsCmd = JqJsCmds.PrependHtml("active", in match {
+    def apply(in: Any): JsCmd = PrependHtml("active", in match {
         case JsonCmd("processForm", _, p: Map[_, _], _) => createActivity(p.asInstanceOf[Map[String, String]])
         case x => <tr><td>Didn't understand message! {x}</td></tr>
       })
@@ -27,7 +31,7 @@ class Tic {
       makeRow(activity)
   }
 
-  def entry = SHtml.jsonForm(json, <head>{JsCmds.Script(json.jsCmd)}</head>
+  def entry = SHtml.jsonForm(json, <head>{Script(json.jsCmd)}</head>
       <input name="name" type="text" />
       <input type="submit" value="Start"/>)
 
@@ -45,7 +49,7 @@ class Tic {
         toStop.stop()
         Model.em.merge(toStop)
       }
-      JqJsCmds.Hide(toStop.getId.toString) & JqJsCmds.PrependHtml("inactive", makeRow(toStop))
+      Hide(toStop.getId.toString) & PrependHtml("inactive", makeRow(toStop))
   }
 
   def restart(toRestart: Activity) = {
@@ -53,14 +57,14 @@ class Tic {
         toRestart.setStop(null)
         Model.em.merge(toRestart)
       }
-      JqJsCmds.Hide(toRestart.getId.toString) & JqJsCmds.PrependHtml("active", makeRow(toRestart))
+      Hide(toRestart.getId.toString) & PrependHtml("active", makeRow(toRestart))
   }
 
   def delete(toDeleteId: long) = {
     Model.intx {
       Model.em.createQuery("delete from Activity where id = :id").setParameter("id", toDeleteId).executeUpdate()
     }
-    JqJsCmds.Hide(toDeleteId.toString)
+    Hide(toDeleteId.toString)
   }
 
   def changeName(act: Activity, newName: String) = {
@@ -68,7 +72,7 @@ class Tic {
        act.setName(newName)
        Model.em.merge(act)
      }
-     JsCmds.SetHtml(act.getId.toString + "name", Text(newName))
+     Jq("#" + act.getId + " td:first-child span span") >> JqText(newName)
   }
 
   private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
@@ -85,7 +89,7 @@ class Tic {
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
   private def makeRow(act: Activity): NodeSeq = {
     <tr id={ Text(act.getId.toString) }>
-      <td>{ SHtml.swappable(<span id={ Text(act.getId.toString + "name") }>{ act.getName }</span>, SHtml.ajaxText(act.getName, v => changeName(act, v))) }</td>
+      <td>{ SHtml.swappable(<span>{ act.getName }</span>, SHtml.ajaxText(act.getName, v => changeName(act, v))) }</td>
       <td>{ formatter.format(act.getStart) }</td>
       { if (act.getStop != null) duration(act) else NodeSeq.Empty }
       <td> { if (act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop")) else SHtml.a(() => {restart(act)}, Text("Restart")) }</td>
