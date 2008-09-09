@@ -1,7 +1,7 @@
 package sevorg.tic.snippet
 
 import java.text.SimpleDateFormat
-import scala.xml.{Group, NodeSeq, Text}
+import scala.xml.{NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
 import net.liftweb.http.js.{JsCmd, JsCmds}
@@ -27,44 +27,54 @@ class Tic {
 
   def entry = SHtml.jsonForm(json, <head>{JsCmds.Script(json.jsCmd)}</head>
       <input name="name" type="text" />
-      <input type="submit" value="Start Activity"/>
-    )
+      <input type="submit" value="Start Activity"/>)
 
-  def active: NodeSeq =  all("a.stop IS NULL").flatMap(makeRow)
+  def active: NodeSeq = all("a.stop is null").flatMap(makeRow)
 
-  def inactive: NodeSeq = all("a.stop IS NOT NULL").flatMap(makeRow)
+  def inactive: NodeSeq = all("a.stop is not null").flatMap(makeRow)
 
-  def stop(ending: Activity) = {
-      Model.intx { ending.stop(); Model.em.merge(ending) }
-      JqJsCmds.Hide(ending.getId.toString) & JqJsCmds.PrependHtml("inactive", makeRow(ending))
+  private def all(clause: String) =  {
+      val query = Model.em.createQuery("select a from Activity a where " + clause + " order by a.start desc")
+      query.getResultList.asInstanceOf[java.util.List[Activity]]
   }
 
-  def restart(restarting: Activity) = {
-      Model.intx { restarting.setStop(null); Model.em.merge(restarting) }
-      JqJsCmds.Hide(restarting.getId.toString) & JqJsCmds.PrependHtml("active", makeRow(restarting))
+  def stop(toStop: Activity) = {
+      Model.intx { toStop.stop(); Model.em.merge(toStop) }
+      JqJsCmds.Hide(toStop.getId.toString) & JqJsCmds.PrependHtml("inactive", makeRow(toStop))
   }
+
+  def restart(toRestart: Activity) = {
+      Model.intx { toRestart.setStop(null); Model.em.merge(toRestart) }
+      JqJsCmds.Hide(toRestart.getId.toString) & JqJsCmds.PrependHtml("active", makeRow(toRestart))
+  }
+
+  def delete(toDeleteId: long) = {
+    Model.intx { Model.em.createQuery("delete from Activity where id = :id").setParameter("id", toDeleteId).executeUpdate() }
+    JqJsCmds.Hide(toDeleteId.toString)
+  }
+
 
   private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
 
-  private def all(clause: String) =  Model.em.createQuery("SELECT a FROM Activity a WHERE " + clause).getResultList.asInstanceOf[java.util.List[Activity]]
+  val minute = 60 * 1000
+  val hour = 60 * minute
+  private def duration(act: Activity) = {
+      val millis = act.getStop.getTime - act.getStart.getTime
+      val hours = millis / hour
+      val minutes = millis % hour / minute
+      <td>{ hours + "h " + minutes + "m" }</td>
+  }
 
   val todayFormatter = new SimpleDateFormat("HH:mm")
   val earlierFormatter = new SimpleDateFormat("MM/dd HH:mm")
   private def makeRow(act: Activity): NodeSeq = {
     val formatter = if (System.currentTimeMillis - act.getStart.getTime < (1000 * 60 * 60 * 24)) todayFormatter else earlierFormatter
-    bind("f",
-      <tr id={Text(act.getId.toString)}>
-        <td>
-          <f:name>Working on tic</f:name>
-        </td>
-        <td>
-          <f:start>10:30</f:start>
-        </td>
-        <td>
-          { if(act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop"))
-            else SHtml.a(() => {restart(act)}, Text("Restart"))
-          }
-        </td>
-      </tr>, "name" -> Text(act.getName), "start" -> Text(formatter.format(act.getStart)))
+    <tr id={ Text(act.getId.toString) }>
+      <td>{ Text(act.getName) }</td>
+      <td>{ formatter.format(act.getStart) }</td>
+      { if (act.getStop != null) duration(act) else NodeSeq.Empty }
+      <td> { if (act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop")) else SHtml.a(() => {restart(act)}, Text("Restart")) }</td>
+      <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete"))  }</td>
+    </tr>
   }
 }
