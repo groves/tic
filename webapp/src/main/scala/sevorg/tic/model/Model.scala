@@ -8,7 +8,7 @@ object Model {
   val emVar = new ThreadLocal[EntityManager];
   def em = emVar.get();
 
-  def intx(f: Unit) = withtx((tx: EntityTransaction) => {f})
+  def intx(f: => Unit) = withtx((tx: EntityTransaction) => {f})
 
   def withtx(f: (EntityTransaction) => Unit) = {
     val tx = em.getTransaction()
