@@ -16,6 +16,7 @@ import sevorg.tic.model.{Activity, Model}
 import sevorg.tic.model.Model.{setToWrapper,listToWrapper}
 
 class Tic {
+  val formatter = new SimpleDateFormat("MM/dd HH:mm")
   object json extends JsonHandler {
     def apply(in: Any): JsCmd = PrependHtml("active", in match {
         case JsonCmd("processForm", _, p: Map[_, _], _) => createActivity(p.asInstanceOf[Map[String, String]])
@@ -75,6 +76,15 @@ class Tic {
      Jq("#" + act.getId + " td:first-child span span") >> JqText(newName)
   }
 
+  def changeStart(act: Activity, newTime: String) = {
+      val newDate = formatter.parse(newTime)
+      Model.intx {
+          act.setStart(newDate)
+          Model.em.merge(act)
+      }
+      Jq("#" + act.getId + " td:eq(1) span span") >> JqText(formatter.format(newDate))
+  }
+
   private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
 
   val minute = 60 * 1000
@@ -86,11 +96,10 @@ class Tic {
       <td>{ hours + "h " + minutes + "m" }</td>
   }
 
-  val formatter = new SimpleDateFormat("MM/dd HH:mm")
   private def makeRow(act: Activity): NodeSeq = {
     <tr id={ Text(act.getId.toString) }>
       <td>{ SHtml.swappable(<span>{ act.getName }</span>, SHtml.ajaxText(act.getName, v => changeName(act, v))) }</td>
-      <td>{ formatter.format(act.getStart) }</td>
+      <td>{ SHtml.swappable(<span>{ formatter.format(act.getStart) }</span>, SHtml.ajaxText(formatter.format(act.getStart), v => changeStart(act, v))) }</td>
       { if (act.getStop != null) duration(act) else NodeSeq.Empty }
       <td> { if (act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop")) else SHtml.a(() => {restart(act)}, Text("Restart")) }</td>
       <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete"))  }</td>
