@@ -19,7 +19,8 @@ class Tic {
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
   object json extends JsonHandler {
     def apply(in: Any): JsCmd = PrependHtml("active", in match {
-        case JsonCmd("processForm", _, p: Map[_, _], _) => createActivity(p.asInstanceOf[Map[String, String]])
+        case JsonCmd("processForm", _, p: Map[_, _], _) =>
+            createActivity(p.asInstanceOf[Map[String, String]])
         case x => <tr><td>Didn't understand message! {x}</td></tr>
       })
   }
@@ -63,7 +64,8 @@ class Tic {
 
   def delete(toDeleteId: long) = {
     Model.intx {
-      Model.em.createQuery("delete from Activity where id = :id").setParameter("id", toDeleteId).executeUpdate()
+      val query = Model.em.createQuery("delete from Activity where id = :id")
+      query.setParameter("id", toDeleteId).executeUpdate()
     }
     Hide(toDeleteId.toString)
   }
@@ -85,7 +87,10 @@ class Tic {
       Jq("#" + act.getId + " td:eq(1) span span") >> JqText(formatter.format(newDate))
   }
 
-  private def byId(id: long) = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id").setParameter("id", id).getSingleResult.asInstanceOf[Activity]
+  private def byId(id: long) = {
+    val query = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id")
+    query.setParameter("id", id).getSingleResult.asInstanceOf[Activity]
+  }
 
   val minute = 60 * 1000
   val hour = 60 * minute
@@ -98,11 +103,23 @@ class Tic {
 
   private def makeRow(act: Activity): NodeSeq = {
     <tr id={ Text(act.getId.toString) }>
-      <td>{ SHtml.swappable(<span>{ act.getName }</span>, SHtml.ajaxText(act.getName, v => changeName(act, v))) }</td>
-      <td>{ SHtml.swappable(<span>{ formatter.format(act.getStart) }</span>, SHtml.ajaxText(formatter.format(act.getStart), v => changeStart(act, v))) }</td>
+      <td>{ SHtml.swappable(<span>{ act.getName }</span>,
+                            SHtml.ajaxText(act.getName, v => changeName(act, v))) }
+      </td>
+      <td>{ SHtml.swappable(<span>{ formatter.format(act.getStart) }</span>,
+                            SHtml.ajaxText(formatter.format(act.getStart),
+                                           v => changeStart(act, v)))
+          }
+      </td>
       { if (act.getStop != null) duration(act) else NodeSeq.Empty }
-      <td> { if (act.getStop == null) SHtml.a(() => {stop(act)}, Text("Stop")) else SHtml.a(() => {restart(act)}, Text("Restart")) }</td>
-      <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete"))  }</td>
+      <td> {  if (act.getStop == null) {
+                  SHtml.a(() => {stop(act)}, Text("Stop"))
+              } else {
+                  SHtml.a(() => {restart(act)}, Text("Restart"))
+              }
+          }
+      </td>
+      <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete")) }</td>
     </tr>
   }
 }
