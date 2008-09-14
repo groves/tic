@@ -1,13 +1,13 @@
 package sevorg.tic.snippet
 
-import java.text.SimpleDateFormat
-import scala.xml.{NodeSeq, Text}
+import java.text.{ParseException, SimpleDateFormat}
+import scala.xml.{Elem, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
-import net.liftweb.http.js.{JsCmd, JsCmds, JE}
+import net.liftweb.http.js.{JsCmd, JsCmds, JsExp, JE}
 import JE._
 import JsCmds._
-import net.liftweb.http.js.jquery.{JqJE, JqJsCmds}
+import net.liftweb.http.js.jquery.{JqJE, JqJsCmds, JQueryLeft, JQueryRight}
 import JqJE._
 import JqJsCmds._
 import net.liftweb.util.Helpers._
@@ -16,6 +16,10 @@ import sevorg.tic.model.{Activity, Model}
 import sevorg.tic.model.Model.{setToWrapper,listToWrapper}
 
 class Tic {
+  case class JqCSS(name: JsExp, value: JsExp) extends JsExp with JQueryRight with JQueryLeft {
+    def toJsCmd = "css(" + name.toJsCmd + ", " + value.toJsCmd + ")"
+  }
+
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
   object json extends JsonHandler {
     def apply(in: Any): JsCmd = PrependHtml("active", in match {
@@ -70,21 +74,25 @@ class Tic {
     Hide(toDeleteId.toString)
   }
 
-  def changeName(act: Activity, newName: String) = {
+  def changeName(act: Activity)(newName: String) = {
      Model.intx { 
        act.setName(newName)
        Model.em.merge(act)
      }
-     Jq("#" + act.getId + " td:first-child span span") >> JqText(newName)
+     true
   }
 
-  def changeStart(act: Activity, newTime: String) = {
-      val newDate = formatter.parse(newTime)
+  def changeStart(act: Activity)(newTime: String): Boolean = {
+      val newDate = try {
+          formatter.parse(newTime)
+      } catch {
+          case nfe: ParseException => { return false }
+      }
       Model.intx {
           act.setStart(newDate)
           Model.em.merge(act)
       }
-      Jq("#" + act.getId + " td:eq(1) span span") >> JqText(formatter.format(newDate))
+      return true
   }
 
   private def byId(id: long) = {
@@ -101,22 +109,30 @@ class Tic {
       <td>{ hours + "h " + minutes + "m" }</td>
   }
 
+  def validatingSwappable(initialValue: String, validator: String => Boolean) = {
+      val (rs, shownId) = findOrAddId(<span>{initialValue}</span>)
+      val hiddenId = "R" + randomString(12)
+      def swapOrShowError(restoreJS: String)(newValue: String):JsCmd = {
+          if(validator(newValue)){
+              JsRaw(restoreJS) & Jq("#" + shownId) >> JqText(newValue)
+          } else {
+              Jq("#" + hiddenId + ":first-child") >> JqCSS("border", "solid red 1px")
+          }
+      }
+      SHtml.swappable(rs, (restoreJS: String) =>{
+              <span id={hiddenId}>{SHtml.ajaxText(initialValue, swapOrShowError(restoreJS))}</span> })
+  }
+
   private def makeRow(act: Activity): NodeSeq = {
     <tr id={ Text(act.getId.toString) }>
-      <td>{ SHtml.swappable(<span>{ act.getName }</span>,
-                            SHtml.ajaxText(act.getName, v => changeName(act, v))) }
-      </td>
-      <td>{ SHtml.swappable(<span>{ formatter.format(act.getStart) }</span>,
-                            SHtml.ajaxText(formatter.format(act.getStart),
-                                           v => changeStart(act, v)))
-          }
-      </td>
+      <td>{ validatingSwappable(act.getName, changeName(act)) }</td>
+      <td>{ validatingSwappable(formatter.format(act.getStart), changeStart(act)) }</td>
       { if (act.getStop != null) duration(act) else NodeSeq.Empty }
-      <td> {  if (act.getStop == null) {
-                  SHtml.a(() => {stop(act)}, Text("Stop"))
-              } else {
-                  SHtml.a(() => {restart(act)}, Text("Restart"))
-              }
+      <td>{  if (act.getStop == null) {
+                 SHtml.a(() => {stop(act)}, Text("Stop"))
+             } else {
+                 SHtml.a(() => {restart(act)}, Text("Restart"))
+             }
           }
       </td>
       <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete")) }</td>
