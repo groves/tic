@@ -58,12 +58,12 @@ class Tic {
       Hide(toStop.getId.toString) & PrependHtml("inactive", makeRow(toStop))
   }
 
-  def restart(toRestart: Activity) = {
+  def resume(toResume: Activity) = {
+      val activity = new Activity(toResume.getName)
       Model.intx {
-        toRestart.setStop(null)
-        Model.em.merge(toRestart)
+        Model.em.persist(activity)
       }
-      Hide(toRestart.getId.toString) & PrependHtml("active", makeRow(toRestart))
+      PrependHtml("active", makeRow(activity))
   }
 
   def delete(toDeleteId: long) = {
@@ -131,7 +131,7 @@ class Tic {
       <td>{  if (act.getStop == null) {
                  SHtml.a(() => {stop(act)}, Text("Stop"))
              } else {
-                 SHtml.a(() => {restart(act)}, Text("Restart"))
+                 SHtml.a(() => {resume(act)}, Text("Resume"))
              }
           }
       </td>
