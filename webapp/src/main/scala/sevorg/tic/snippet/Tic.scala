@@ -22,11 +22,11 @@ class Tic {
 
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
   object json extends JsonHandler {
-    def apply(in: Any): JsCmd = PrependHtml("active", in match {
+    def apply(in: Any) = in match {
         case JsonCmd("processForm", _, p: Map[_, _], _) =>
             createActivity(p.asInstanceOf[Map[String, String]])
-        case x => <tr><td>Didn't understand message! {x}</td></tr>
-      })
+        case x => PrependHtml("active", <tr><td>Didn't understand message! {x}</td></tr>)
+      }
   }
 
   private def createActivity(params: Map[String, String]) = {
@@ -34,11 +34,11 @@ class Tic {
       Model.intx {
         Model.em.persist(activity)
       }
-      makeRow(activity)
+      PrependHtml("active", makeRow(activity)) & Jq("#activityname") >> JqAttr("value", "")
   }
 
   def entry = SHtml.jsonForm(json, <head>{Script(json.jsCmd)}</head>
-      <input name="name" type="text" />
+      <input id="activityname" name="name" type="text" />
       <input type="submit" value="Start"/>)
 
   def active: NodeSeq = all("a.stop is null").flatMap(makeRow)
