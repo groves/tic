@@ -48,7 +48,7 @@ class Tic {
   def active: NodeSeq = all("a.stop is null").flatMap(makeRow)
 
   def inactive: NodeSeq = {
-      val query = Model.em.createQuery("select a from Activity a where a.start > :yesterday order by a.start")
+      val query = Model.em.createQuery("select a from Activity a where a.start > :yesterday and a.stop is not null order by a.start")
       val cal = Calendar.getInstance()
       cal.setTimeZone(tz)
       cal.add(Calendar.DAY_OF_MONTH, -1)
