@@ -1,6 +1,7 @@
 package sevorg.tic.snippet
 
 import java.text.{ParseException, SimpleDateFormat}
+import java.util.TimeZone
 import scala.xml.{Elem, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
@@ -21,6 +22,8 @@ class Tic {
   }
 
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
+  // TODO - Set a time zone on the user and use it here once users are added and all that
+  formatter.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"))
   object json extends JsonHandler {
     def apply(in: Any) = in match {
         case JsonCmd("processForm", _, p: Map[_, _], _) =>
