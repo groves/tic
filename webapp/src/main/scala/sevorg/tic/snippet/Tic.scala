@@ -1,7 +1,7 @@
 package sevorg.tic.snippet
 
 import java.text.{ParseException, SimpleDateFormat}
-import java.util.{Date, TimeZone}
+import java.util.{Calendar, Date, TimeZone}
 import scala.xml.{Elem, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
@@ -23,7 +23,8 @@ class Tic {
 
   val formatter = new SimpleDateFormat("MM/dd HH:mm")
   // TODO - Set a time zone on the user and use it here once users are added and all that
-  formatter.setTimeZone(TimeZone.getTimeZone("America/Los_Angeles"))
+  val tz = TimeZone.getTimeZone("America/Los_Angeles")
+  formatter.setTimeZone(tz)
   object json extends JsonHandler {
     def apply(in: Any) = in match {
         case JsonCmd("processForm", _, p: Map[_, _], _) =>
@@ -46,7 +47,14 @@ class Tic {
 
   def active: NodeSeq = all("a.stop is null").flatMap(makeRow)
 
-  def inactive: NodeSeq = all("a.stop is not null").flatMap(makeRow)
+  def inactive: NodeSeq = {
+      val query = Model.em.createQuery("select a from Activity a where a.start > :yesterday order by a.start")
+      val cal = Calendar.getInstance()
+      cal.setTimeZone(tz)
+      cal.add(Calendar.DAY_OF_MONTH, -1)
+      query.setParameter("yesterday", cal.getTime())
+      query.getResultList.asInstanceOf[java.util.List[Activity]].flatMap(makeRow)
+  }
 
   private def all(clause: String) =  {
       val query = Model.em.createQuery("select a from Activity a where " + clause + " order by a.start desc")
