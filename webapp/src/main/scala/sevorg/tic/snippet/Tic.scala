@@ -1,7 +1,7 @@
 package sevorg.tic.snippet
 
 import java.text.{ParseException, SimpleDateFormat}
-import java.util.TimeZone
+import java.util.{Date, TimeZone}
 import scala.xml.{Elem, NodeSeq, Text}
 
 import net.liftweb.http.{JsonCmd, JsonHandler, S, SHtml}
@@ -98,18 +98,31 @@ class Tic {
       return true
   }
 
+  val Duration = """(\d+)(h|m)""".r
+  val minute = 60 * 1000
+  val hour = 60 * minute
+  def changeDuration(act: Activity)(newDuration: String): Boolean = {
+      val milliduration = (0 /: ((Duration findAllIn newDuration) map (_ match {
+          case Duration(value, "h") => Integer.parseInt(value) * hour
+          case Duration(value, "m") => Integer.parseInt(value) * minute
+      })))(_ + _)
+      Model.intx {
+          act.setStop(new Date(act.getStart.getTime + milliduration))
+          Model.em.merge(act)
+      }
+      return true
+  }
+
   private def byId(id: long) = {
     val query = Model.em.createQuery("SELECT a FROM Activity a WHERE a.id = :id")
     query.setParameter("id", id).getSingleResult.asInstanceOf[Activity]
   }
 
-  val minute = 60 * 1000
-  val hour = 60 * minute
   private def duration(act: Activity) = {
       val millis = act.getStop.getTime - act.getStart.getTime
       val hours = millis / hour
       val minutes = millis % hour / minute
-      <td>{ hours + "h " + minutes + "m" }</td>
+      <td>{ validatingSwappable(hours + "h " + minutes + "m", changeDuration(act)) }</td>
   }
 
   def validatingSwappable(initialValue: String, validator: String => Boolean) = {
