@@ -69,12 +69,20 @@ class Tic {
       Hide(toStop.getId.toString) & PrependHtml("inactive", makeRow(toStop))
   }
 
-  def resume(toResume: Activity) = {
-      val activity = new Activity(toResume.getName)
+  def again(toRedo: Activity) = {
+      val activity = new Activity(toRedo.getName)
       Model.intx {
         Model.em.persist(activity)
       }
       PrependHtml("active", makeRow(activity))
+  }
+
+  def resume(toResume: Activity) = {
+      Model.intx {
+        toResume.setStop(null)
+        Model.em.merge(toResume)
+      }
+      Hide(toResume.getId.toString) & PrependHtml("active", makeRow(toResume))
   }
 
   def delete(toDeleteId: long) = {
@@ -86,7 +94,7 @@ class Tic {
   }
 
   def changeName(act: Activity)(newName: String) = {
-     Model.intx { 
+     Model.intx {
        act.setName(newName)
        Model.em.merge(act)
      }
@@ -159,6 +167,7 @@ class Tic {
              }
           }
       </td>
+      { if (act.getStop != null) <td>{ SHtml.a(() => {again(act)}, Text("Again")) }</td> else NodeSeq.Empty }
       <td> { SHtml.a(() => {delete(act.getId)}, Text("Delete")) }</td>
     </tr>
   }
