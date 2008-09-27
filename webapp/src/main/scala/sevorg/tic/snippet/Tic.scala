@@ -102,13 +102,22 @@ class Tic {
   }
 
   def changeStart(act: Activity)(newTime: String): Boolean = {
+      val before = act.getStart
       val newDate = try {
           formatter.parse(newTime)
       } catch {
           case nfe: ParseException => { return false }
       }
+      // The parser assumes the year is the epoch since it isn't included in the string
+      // We fill it in from the old value to make up for that
+      val cal = Calendar.getInstance()
+      cal.setTimeZone(tz)
+      cal.setTime(before)
+      val year = cal.get(Calendar.YEAR)
+      cal.setTime(newDate)
+      cal.set(Calendar.YEAR, year)
       Model.intx {
-          act.setStart(newDate)
+          act.setStart(cal.getTime)
           Model.em.merge(act)
       }
       return true
