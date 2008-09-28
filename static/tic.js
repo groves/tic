@@ -22,16 +22,17 @@ function addRowLinkListener(activityRow, link, callback) {
             });
 }
 
-function addTextEditor(activityRow, selector, link) {
-    $(selector, activityRow).editable(function(value, settings) {
-            jsonPost(link, {"key":activityRow.attr("id"), "name":value}, function(response) {
+function addTextEditor(activityRow, cell, link) {
+    cell.editable(function(value, settings) {
+            jsonPost(link, {"key":activityRow.attr("id"), "value":value}, function(response) {
                 activityRow.replaceWith(makeActivity(response));
                 });
             }, {"tooltip":"Click to edit..."});
 }
 
 function addActivityRowListeners(activityRow) {
-    addTextEditor(activityRow, "td:first", "/rename");
+    addTextEditor(activityRow, $("td", activityRow).eq(0), "/rename");
+    addTextEditor(activityRow, $("td", activityRow).eq(1), "/editstart");
     addRowLinkListener(activityRow, "/delete", function() { activityRow.remove(); });
     if ($('a[href="/restart"]', activityRow).length == 0) {
         addRowLinkListener(activityRow, "/stop",

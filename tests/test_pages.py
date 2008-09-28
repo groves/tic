@@ -15,10 +15,9 @@ datafixture = GoogleDatastoreFixture(env=model, style=NamedDataStyle())
 
 def test_empty():
     app = TestApp(application)
-    response = app.get('/')
-    tables = response.html.findAll("table")
-    eq_(len(tables), 2)
-    eq_(len(tables[0].findAll("tr")), 0)
+    resp = app.get('/')
+    assert "<table" in resp
+    assert "<tr" not in resp
 
 class TestPages:
     def setUp(self):
@@ -61,6 +60,11 @@ class TestPages:
         assert Activity.get(self.key).stop is None
 
     def testRename(self):
-        response = self.app.post("/rename", {'key': self.key, 'name':'new name'})
+        response = self.app.post("/rename", {'key': self.key, 'value':'new name'})
         assert Activity.get(self.key).name == "new name"
+
+    def testEditStart(self):
+        newstart = datetime(2008, 9, 17, 12, 15)
+        self.app.post("/editstart", {'key': self.key, 'value':newstart.strftime("%Y/%m/%d %H:%M")})
+        eq_(newstart, Activity.get(self.key).start)
 

@@ -79,5 +79,10 @@ class Restart(ActivityModifier):
 
 class Rename(ActivityModifier):
     def modify(self, activity):
-        activity.name = self.require("name")
+        activity.name = self.require("value")
+        return activity
+
+class EditStart(ActivityModifier):
+    def modify(self, activity):
+        activity.start = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
         return activity
