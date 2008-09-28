@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from nose.tools import eq_
 from webtest import TestApp
@@ -75,3 +75,9 @@ class TestPages:
         self.app.post("/editstart", {'key': self.key, 'value':newstart.strftime("%Y/%m/%d %H:%M")})
         eq_(newstart, Activity.get(self.key).start)
 
+    def testEditDuration(self):
+        self.act.stop = datetime.now()
+        self.act.put()
+        newstop = self.act.start + timedelta(hours=1)
+        self.app.post("/editduration", {"key": self.key, 'value':"1 hours"})
+        eq_(newstop, Activity.get(self.key).stop)

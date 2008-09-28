@@ -41,6 +41,7 @@ function addActivityRowListeners(activityRow) {
                     addActivity(response, "inactive");
                 });
     } else {
+        addTextEditor(activityRow, $("td", activityRow).eq(2), "/editduration");
         addRowLinkListener(activityRow, "/restart",
                 function(response) { activityRow.remove(); addActivity(response, "active"); });
         addRowLinkListener(activityRow, "/again",

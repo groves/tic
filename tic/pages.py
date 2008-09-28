@@ -86,3 +86,8 @@ class EditStart(ActivityModifier):
     def modify(self, activity):
         activity.start = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
         return activity
+
+class EditDuration(ActivityModifier):
+    def modify(self, activity):
+        activity.duration = self.require("value")
+        return activity

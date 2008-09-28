@@ -17,6 +17,7 @@ application = webapp.WSGIApplication(
             ('/restart', pages.Restart),
             ('/rename', pages.Rename),
             ('/editstart', pages.EditStart),
+            ('/editduration', pages.EditDuration),
             ('/stop', pages.Stop)], debug=True)
 
 if __name__ == '__main__':
