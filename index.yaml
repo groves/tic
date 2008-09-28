@@ -23,14 +23,22 @@ indexes:
   - name: end
     direction: desc
 
-# Used 109 times in query history.
+# Used 112 times in query history.
 - kind: Activity
   properties:
   - name: stop
   - name: start
     direction: desc
 
-# Used 109 times in query history.
+# Used 6 times in query history.
+- kind: Activity
+  properties:
+  - name: stop
+  - name: user
+  - name: start
+    direction: desc
+
+# Used 118 times in query history.
 - kind: Activity
   properties:
   - name: stop

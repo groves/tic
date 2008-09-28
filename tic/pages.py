@@ -3,6 +3,7 @@ import os
 
 from datetime import datetime, timedelta
 
+from google.appengine.api import users
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
@@ -14,11 +15,14 @@ def render(name, **values):
     path = os.path.join(os.path.dirname(__file__), '../templates/%s.html' % name)
     return template.render(path, values)
 
+def user():
+    return users.get_current_user()
+
 class Index(webapp.RequestHandler):
     def get(self):
         yesterday = datetime.now() - timedelta(1)
         self.response.out.write(render("index",
-            activities=Activity.all().filter("stop =", None).order("-start"),
+            activities=Activity.all().filter("user =", user()).filter("stop =", None).order("-start"),
             inactivities=Activity.all().filter("stop >", yesterday).order("-stop")))
 
 class ParamMissingError(Exception):
@@ -43,7 +47,7 @@ class JsonHandler(webapp.RequestHandler):
 
 class Add(JsonHandler):
     def json(self):
-        activity = Activity(name=self.require("name"))
+        activity = Activity(name=self.require("name"), user=user())
         activity.put()
         return {"activity":render("activity", activity=activity)}
 

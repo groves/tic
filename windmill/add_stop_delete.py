@@ -3,6 +3,8 @@ from windmill.authoring import WindmillTestClient
 def test():
     client = WindmillTestClient(__name__)
 
+    client.click(id=u'submit-login')
+    client.waits.forPageLoad(timeout=u'20000')
     client.click(name=u'name')
     client.type(text=u'adding activity', name=u'name')
     client.click(xpath=u"//form[@id='add_activity']/input[2]")
@@ -12,4 +14,3 @@ def test():
     client.waits.forElement(xpath=u"//a[@href='/delete']", timeout=u'')
     client.click(link=u"Delete")
     client.waits.forNotElement(xpath=u'//td', timeout=u'')
-    client.asserts.assertNotNode(xpath=u'//td')

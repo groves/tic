@@ -9,3 +9,4 @@ handlers:
 
 - url: .*
   script: tic/__init__.py
+  login: required

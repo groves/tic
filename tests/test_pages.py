@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from nose.tools import eq_
@@ -9,6 +10,7 @@ from tic import application, model
 from tic.model import Activity
 from datasets import ActivityData
 
+os.environ['USER_EMAIL'] = "test@blah.com"
 datafixture = GoogleDatastoreFixture(env=model, style=NamedDataStyle())
 
 def test_empty():
