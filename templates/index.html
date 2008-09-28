@@ -29,11 +29,11 @@
 </script>
 {% endblock %}
 {% block content %}
-<form id="add_activity" action="/add" method="post">
+<form id="add_activity" action="/add" method="post" class="span-8 last">
     <input type="text" name="name" />
     <input type="submit" value="Start" />
 </form>
-<table id="active">
+<table id="active" class="span-16">
 {% for activity in activities %}
 {% include "activity.html" %}
 {% endfor %}
