@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block head %}
+<script type="text/javascript">
+    $(document).ready(function() {
+            $('#add_activity').ajaxForm({
+                "resetForm":true,
+                "dataType":"json",
+                "success": function(response) {
+                    if(response.success) {
+                        $('#active').prepend($(response.activity));
+                    } else {
+                        alert(response.reason);
+                    }
+                }});
+
+            $('tr a[href="/delete"]').click(function() {
+                id = $(this).parent().parent().attr("id");
+                $.post("/delete", {"key":id}, function(response) {
+                    if(response.success) {
+                       $("#" + id).fadeOut("normal");
+                    } else {
+                       alert(response.reason);
+                    }
+                    }, "json");
+                return false;
+                });
+            });
+</script>
+{% endblock %}
+{% block content %}
+<form id="add_activity" action="/add" method="post">
+    <input type="text" name="name" />
+    <input type="submit" value="Start" />
+</form>
+<table id="active">
+{% for activity in activities %}
+{% include "activity.html" %}
+{% endfor %}
+</table>
+{% endblock %}

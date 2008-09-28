@@ -1,0 +1,15 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+    <head>
+        <title>tic. - {% block title %}{% endblock %}</title>
+        <script src="http://www.google.com/jsapi"></script>
+        <script>
+           google.load("jquery", "1");
+        </script>
+        <script type="text/javascript" src="/static/jquery.form.min.js"></script> 
+        {% block head %}{% endblock %}
+    </head>
+    <body>
+        {% block content %}{% endblock %}
+    </body>
+</html>
