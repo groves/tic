@@ -11,6 +11,7 @@ class MainHandler(webapp.RequestHandler):
 
 application = webapp.WSGIApplication(
         [('/', pages.Index),
+            ('/preferences', pages.Preferences),
             ('/add', pages.Add),
             ('/delete', pages.Delete),
             ('/again', pages.Again),

@@ -1,6 +1,9 @@
 import re
 from datetime import timedelta
 
+import pytz
+
+from google.appengine.api import users
 from google.appengine.ext import db
 
 def format(value, unit):
@@ -13,6 +16,7 @@ def format(value, unit):
 
 duration_parser = re.compile("((?P<hours>\d+) hours? ?)?((?P<minutes>\d+) minutes?)?")
 hour = 60 * 60
+
 class Activity(db.Model):
     user = db.UserProperty()
     name = db.StringProperty()
@@ -31,3 +35,21 @@ class Activity(db.Model):
         self.stop = self.start + timedelta(hours=hours, minutes=minutes)
 
     duration = property(getDuration, setDuration)
+
+    localstart = property(lambda x: x.start.replace(tzinfo=pytz.utc).astimezone(prefs().timezone))
+
+def user():
+    return users.get_current_user()
+
+def prefs():
+    prefs = UserPrefs.all().filter("user =", user()).fetch(1)
+    if len(prefs) == 1:
+        return prefs[0]
+    return UserPrefs(user=user(), tzname=pytz.utc.zone)
+
+
+class UserPrefs(db.Model):
+    user = db.UserProperty()
+    tzname = db.StringProperty()
+
+    timezone = property(lambda x: pytz.timezone(x.tzname))

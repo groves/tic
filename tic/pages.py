@@ -1,22 +1,19 @@
 import logging
 import os
-
 from datetime import datetime, timedelta
 
-from google.appengine.api import users
+import pytz
+
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
 from django.utils import simplejson as json
 
-from model import Activity
+from model import Activity, UserPrefs, prefs, user
 
 def render(name, **values):
     path = os.path.join(os.path.dirname(__file__), '../templates/%s.html' % name)
     return template.render(path, values)
-
-def user():
-    return users.get_current_user()
 
 class Index(webapp.RequestHandler):
     def get(self):
@@ -24,6 +21,18 @@ class Index(webapp.RequestHandler):
         self.response.out.write(render("index",
             activities=Activity.all().filter("user =", user()).filter("stop =", None).order("-start"),
             inactivities=Activity.all().filter("stop >", yesterday).order("-stop")))
+
+class Preferences(webapp.RequestHandler):
+    def get(self):
+        zones = pytz.common_timezones
+        index = zones.index(prefs().timezone.zone)
+        self.response.out.write(render("preferences", **locals()))
+
+    def post(self):
+        prefs = prefs()
+        prefs.tzname = self.request.get("timezone")
+        prefs.put()
+        self.get()
 
 class ParamMissingError(Exception):
     pass
@@ -70,7 +79,7 @@ class Stop(ActivityModifier):
 
 class Again(ActivityModifier):
     def modify(self, activity):
-        return Activity(name=activity.name, start=activity.start, user=user())
+        return Activity(name=activity.name, user=user())
 
 class Restart(ActivityModifier):
     def modify(self, activity):
@@ -84,10 +93,12 @@ class Rename(ActivityModifier):
 
 class EditStart(ActivityModifier):
     def modify(self, activity):
-        activity.start = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
+        newstart = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
+        activity.start = newstart.replace(tzinfo=prefs().timezone).astimezone(pytz.utc)
         return activity
 
 class EditDuration(ActivityModifier):
     def modify(self, activity):
         activity.duration = self.require("value")
         return activity
+
