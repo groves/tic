@@ -13,8 +13,8 @@
                         alert(response.reason);
                     }
                 }});
-            $("#active tr").each(function() { addRowLinkListeners($(this), "active"); });
-            $("#inactive tr").each(function() { addRowLinkListeners($(this), "inactive"); });
+            $("#active tr").each(function() { addActivityRowListeners($(this), "active"); });
+            $("#inactive tr").each(function() { addActivityRowListeners($(this), "inactive"); });
             });
 </script>
 {% endblock %}

@@ -25,6 +25,8 @@ class TestPages:
         self.app = TestApp(application)
         self.data = datafixture.data(ActivityData)
         self.data.setup()
+        self.act = Activity.all()[0]
+        self.key = self.act.key()
 
     def tearDown(self):
         self.data.teardown()
@@ -39,24 +41,26 @@ class TestPages:
         response.mustcontain("false", "name must be given")
 
     def testDelete(self):
-        key = Activity.all()[0].key()
-        response = self.app.post('/delete', {'key': key})
+        response = self.app.post('/delete', {'key': self.key})
         response.mustcontain("true")
-        assert Activity.get(key) is None
+        assert Activity.get(self.key) is None
         response = self.app.post('/delete')
         response.mustcontain("false", "key must be given")
 
     def testStop(self):
-        act = Activity.all()[0]
-        assert act.stop is None
-        response = self.app.post('/stop', {'key': act.key()})
-        response.mustcontain("true", act.name)
-        assert Activity.get(act.key()) is not None
+        assert self.act.stop is None
+        response = self.app.post('/stop', {'key': self.key})
+        response.mustcontain("true", self.act.name)
+        assert Activity.get(self.key) is not None
 
     def testRestart(self):
-        act = Activity.all()[0]
-        act.stop = datetime.now()
-        act.put()
-        response = self.app.post("/restart", {'key': act.key()})
-        response.mustcontain("true", act.name)
-        assert Activity.get(act.key()).stop is None
+        self.act.stop = datetime.now()
+        self.act.put()
+        response = self.app.post("/restart", {'key': self.key})
+        response.mustcontain("true", self.act.name)
+        assert Activity.get(self.key).stop is None
+
+    def testRename(self):
+        response = self.app.post("/rename", {'key': self.key, 'name':'new name'})
+        assert Activity.get(self.key).name == "new name"
+

@@ -15,6 +15,7 @@ application = webapp.WSGIApplication(
             ('/delete', pages.Delete),
             ('/again', pages.Again),
             ('/restart', pages.Restart),
+            ('/rename', pages.Rename),
             ('/stop', pages.Stop)], debug=True)
 
 if __name__ == '__main__':

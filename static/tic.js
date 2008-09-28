@@ -1,25 +1,39 @@
-function addActivity(response, group) {
+function jsonPost(url, values, callback){ $.post(url, values, callback, "json"); }
+
+function makeActivity(response) {
     newRow = $(response.activity);
-    addRowLinkListeners(newRow, group);
-    $("#" + group).prepend($(newRow));
+    addActivityRowListeners(newRow);
+    return newRow;
+}
+function addActivity(response, group) {
+    $("#" + group).prepend(makeActivity(response));
 }
 
 function addRowLinkListener(activityRow, link, callback) {
     $('a[href="'+ link + '"]', activityRow).click(function() {
-            $.post(link, {"key":activityRow.attr("id")}, function(response) {
+            jsonPost(link, {"key":activityRow.attr("id")}, function(response) {
                 if (response.success) {
                     callback(response);
                 } else {
                    alert(response.reason);
                 }
-                }, "json");
+                });
             return false;
             });
 }
 
-function addRowLinkListeners(activityRow, group) {
+function addTextEditor(activityRow, selector, link) {
+    $(selector, activityRow).editable(function(value, settings) {
+            jsonPost(link, {"key":activityRow.attr("id"), "name":value}, function(response) {
+                activityRow.replaceWith(makeActivity(response));
+                });
+            }, {"tooltip":"Click to edit..."});
+}
+
+function addActivityRowListeners(activityRow) {
+    addTextEditor(activityRow, "td:first", "/rename");
     addRowLinkListener(activityRow, "/delete", function() { activityRow.remove(); });
-    if (group == "active") {
+    if ($('a[href="/restart"]', activityRow).length == 0) {
         addRowLinkListener(activityRow, "/stop",
                 function(response) { 
                     activityRow.remove();

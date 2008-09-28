@@ -55,6 +55,7 @@ class ActivityModifier(JsonHandler):
     def json(self):
         result = self.modify(Activity.get(db.Key(self.require("key"))))
         if result:
+            result.put()
             return {"activity":render("activity", activity=result)}
         return {}
 
@@ -65,17 +66,18 @@ class Delete(ActivityModifier):
 class Stop(ActivityModifier):
     def modify(self, activity):
         activity.stop = datetime.now()
-        activity.put()
         return activity
 
 class Again(ActivityModifier):
     def modify(self, activity):
-        newActivity = Activity(name=activity.name, start=activity.start)
-        newActivity.put()
-        return newActivity
+        return Activity(name=activity.name, start=activity.start)
 
 class Restart(ActivityModifier):
     def modify(self, activity):
         activity.stop = None
-        activity.put()
+        return activity
+
+class Rename(ActivityModifier):
+    def modify(self, activity):
+        activity.name = self.require("name")
         return activity
