@@ -70,7 +70,7 @@ class Stop(ActivityModifier):
 
 class Again(ActivityModifier):
     def modify(self, activity):
-        return Activity(name=activity.name, start=activity.start)
+        return Activity(name=activity.name, start=activity.start, user=user())
 
 class Restart(ActivityModifier):
     def modify(self, activity):

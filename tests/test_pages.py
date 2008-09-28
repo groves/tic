@@ -6,7 +6,7 @@ from webtest import TestApp
 from fixture import GoogleDatastoreFixture
 from fixture.style import NamedDataStyle
 
-from tic import application, model
+from tic import application, model, pages
 from tic.model import Activity
 from datasets import ActivityData
 
@@ -29,6 +29,8 @@ class TestPages:
 
     def tearDown(self):
         self.data.teardown()
+        for a in Activity.all():
+            a.delete()
 
     def testSingleActivity(self):
         assert ActivityData.working_on_tic.name in self.app.get("/")
@@ -58,6 +60,11 @@ class TestPages:
         response = self.app.post("/restart", {'key': self.key})
         response.mustcontain("true", self.act.name)
         assert Activity.get(self.key).stop is None
+
+    def testAgain(self):
+        response = self.app.post("/again", {'key': self.key})
+        response.mustcontain("true", self.act.name)
+        assert Activity.all().filter("user =", pages.user()).filter("name =", self.act.name).count() == 2
 
     def testRename(self):
         response = self.app.post("/rename", {'key': self.key, 'value':'new name'})
