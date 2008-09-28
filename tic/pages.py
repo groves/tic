@@ -1,6 +1,8 @@
 import logging
 import os
 
+from datetime import datetime, timedelta
+
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
@@ -14,25 +16,62 @@ def render(name, **values):
 
 class Index(webapp.RequestHandler):
     def get(self):
+        yesterday = datetime.now() - timedelta(1)
         self.response.out.write(render("index",
-            activities=Activity.all().filter("end =", None).order("-start")))
+            activities=Activity.all().filter("stop =", None).order("-start"),
+            inactivities=Activity.all().filter("stop >", yesterday).order("-stop")))
 
-class Add(webapp.RequestHandler):
+class ParamMissingError(Exception):
+    pass
+
+class JsonHandler(webapp.RequestHandler):
+    def require(self, param):
+        val = self.request.get(param)
+        if not val:
+            self.response.out.write(json.dumps({"success":False,
+                "reason":"%s must be given" % param}))
+            raise ParamMissingError
+        return val
+
     def post(self):
-        name = self.request.get("name")
-        if not name:
-            self.response.out.write(json.dumps({"success":False, "reason":"Name must be given"}))
-            return
-        activity = Activity(name=name)
+        try:
+            data = self.json()
+            data["success"] = True
+            self.response.out.write(json.dumps(data)) 
+        except ParamMissingError:
+            pass # Handled by require
+
+class Add(JsonHandler):
+    def json(self):
+        activity = Activity(name=self.require("name"))
         activity.put()
-        self.response.out.write(json.dumps({"success":True,
-            "activity":render("activity", activity=activity)}))
+        return {"activity":render("activity", activity=activity)}
 
-class Delete(webapp.RequestHandler):
-    def post(self):
-        key = self.request.get("key")
-        if not key:
-            self.response.out.write(json.dumps({"success":False, "reason":"Key must be given"}))
-            return
-        Activity.get(db.Key(key)).delete()
-        self.response.out.write(json.dumps({"success":True, "activity":key}))
+class ActivityModifier(JsonHandler):
+    def json(self):
+        result = self.modify(Activity.get(db.Key(self.require("key"))))
+        if result:
+            return {"activity":render("activity", activity=result)}
+        return {}
+
+class Delete(ActivityModifier):
+    def modify(self, activity):
+        activity.delete()
+
+class Stop(ActivityModifier):
+    def modify(self, activity):
+        activity.stop = datetime.now()
+        activity.put()
+        return activity
+
+class Again(ActivityModifier):
+    def modify(self, activity):
+        newActivity = Activity(name=activity.name, start=activity.start)
+        newActivity.put()
+        return newActivity
+
+class Restart(ActivityModifier):
+    def modify(self, activity):
+        activity.stop = None
+        activity.put()
+        return activity

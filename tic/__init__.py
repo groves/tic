@@ -12,7 +12,10 @@ class MainHandler(webapp.RequestHandler):
 application = webapp.WSGIApplication(
         [('/', pages.Index),
             ('/add', pages.Add),
-            ('/delete', pages.Delete)], debug=True)
+            ('/delete', pages.Delete),
+            ('/again', pages.Again),
+            ('/restart', pages.Restart),
+            ('/stop', pages.Stop)], debug=True)
 
 if __name__ == '__main__':
     wsgiref.handlers.CGIHandler().run(application)

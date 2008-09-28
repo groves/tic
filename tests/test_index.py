@@ -14,7 +14,7 @@ def test_empty():
     app = TestApp(application)
     response = app.get('/')
     tables = response.html.findAll("table")
-    eq_(len(tables), 1)
+    eq_(len(tables), 2)
     eq_(len(tables[0].findAll("tr")), 0)
 
 def test_single_activity():
@@ -30,7 +30,7 @@ def test_add():
     response = app.post('/add', {'name': 'new activity'})
     response.mustcontain("true", 'new activity')
     response = app.post('/add')
-    response.mustcontain("false", "Name must be given")
+    response.mustcontain("false", "name must be given")
 
 def test_delete():
     app = TestApp(application)
@@ -38,10 +38,19 @@ def test_delete():
     data.setup()
     key = Activity.all()[0].key()
     response = app.post('/delete', {'key': key})
-    response.mustcontain("true", key)
+    response.mustcontain("true")
     assert Activity.get(key) is None
     response = app.post('/delete')
-    response.mustcontain("false", "Key must be given")
+    response.mustcontain("false", "key must be given")
     data.teardown()
 
-
+def test_stop():
+    app = TestApp(application)
+    data = datafixture.data(ActivityData)
+    data.setup()
+    act = Activity.all()[0]
+    assert act.stop is None
+    response = app.post('/stop', {'key': act.key()})
+    response.mustcontain("true", act.name)
+    assert Activity.get(act.key()) is not None
+    data.teardown()

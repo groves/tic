@@ -1,6 +1,12 @@
 <tr id="{{ activity.key }}">
     <td>{{ activity.name }}</td> 
     <td>{{ activity.start|date:"G:i, M j" }}</td>
+    {% if activity.stop %}
+    <td>{{ activity.duration }}</td>
+    <td><a href="/restart">Restart</a></td>
+    <td><a href="/again">Again</a></td>
+    {% else %}
+    <td><a href="/stop">Stop</a></td>
+    {% endif %}
     <td><a href="/delete">Delete</a></td>
 </tr>
-

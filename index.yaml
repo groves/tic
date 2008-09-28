@@ -10,9 +10,28 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
-# Used 16 times in query history.
+# Used 87 times in query history.
 - kind: Activity
   properties:
   - name: end
   - name: start
+    direction: desc
+
+# Used 8 times in query history.
+- kind: Activity
+  properties:
+  - name: end
+    direction: desc
+
+# Used 109 times in query history.
+- kind: Activity
+  properties:
+  - name: stop
+  - name: start
+    direction: desc
+
+# Used 109 times in query history.
+- kind: Activity
+  properties:
+  - name: stop
     direction: desc
