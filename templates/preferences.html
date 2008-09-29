@@ -4,7 +4,7 @@
 <form action="/preferences" method="post" class="span-8 last">
     <select name="timezone">
     {% for zone in zones %}
-    <option {% ifequal index forloop.counter0 %}selected="true" {% endifequal %}>{{ zone }}</option>
+        <option{% ifequal index forloop.counter0 %} selected="true"{% endifequal %}>{{ zone }}</option>
     {% endfor %}
     </select>
     <input type="submit" value="Set" />

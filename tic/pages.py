@@ -29,9 +29,9 @@ class Preferences(webapp.RequestHandler):
         self.response.out.write(render("preferences", **locals()))
 
     def post(self):
-        prefs = prefs()
-        prefs.tzname = self.request.get("timezone")
-        prefs.put()
+        pref = prefs()
+        pref.tzname = self.request.get("timezone")
+        pref.put()
         self.get()
 
 class ParamMissingError(Exception):
