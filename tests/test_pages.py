@@ -26,7 +26,7 @@ class TestPages:
         self.app = TestApp(application)
         self.data = datafixture.data(ActivityData)
         self.data.setup()
-        self.act = Activity.all()[0]
+        self.act = Activity.all().filter("name =", ActivityData.working_on_tic.name)[0]
         self.key = self.act.key()
 
     def tearDown(self):
@@ -36,8 +36,10 @@ class TestPages:
         for p in UserPrefs.all():
             p.delete()
 
-    def testSingleActivity(self):
-        assert ActivityData.working_on_tic.name in self.app.get("/")
+    def testDisplayedActivities(self):
+        resp = self.app.get("/")
+        eq_(ActivityData.working_on_tic.name, resp.html.find("table", id="active").tr.td.string)
+        eq_(ActivityData.sleeping.name, resp.html.find("table", id="inactive").tr.td.string)
 
     def testAdd(self):
         response = self.app.post('/add', {'name': 'new activity'})
