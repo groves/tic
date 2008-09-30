@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import timedelta
 
@@ -36,7 +37,10 @@ class Activity(db.Model):
 
     duration = property(getDuration, setDuration)
 
-    localstart = property(lambda x: x.start.replace(tzinfo=pytz.utc).astimezone(prefs().timezone))
+    def getLocalstart(self):
+        tz = prefs().timezone
+        return tz.normalize(self.start.replace(tzinfo=pytz.utc).astimezone(tz))
+    localstart = property(getLocalstart)
 
 def user():
     return users.get_current_user()

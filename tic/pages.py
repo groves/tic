@@ -2,8 +2,7 @@ import logging
 import os
 from datetime import datetime, timedelta
 
-import pytz
-
+from pytz import common_timezones, utc
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import template
 from google.appengine.ext import db
@@ -24,7 +23,7 @@ class Index(webapp.RequestHandler):
 
 class Preferences(webapp.RequestHandler):
     def get(self):
-        zones = pytz.common_timezones
+        zones = common_timezones
         index = zones.index(prefs().timezone.zone)
         self.response.out.write(render("preferences", **locals()))
 
@@ -94,7 +93,7 @@ class Rename(ActivityModifier):
 class EditStart(ActivityModifier):
     def modify(self, activity):
         newstart = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
-        activity.start = newstart.replace(tzinfo=prefs().timezone).astimezone(pytz.utc)
+        activity.start = prefs().timezone.localize(newstart).astimezone(utc)
         return activity
 
 class EditDuration(ActivityModifier):
