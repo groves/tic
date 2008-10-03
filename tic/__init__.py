@@ -2,24 +2,16 @@ import wsgiref.handlers
 
 from google.appengine.ext import webapp
 
-import pages
+import activity, pages
 
 class MainHandler(webapp.RequestHandler):
     def get(self):
         self.response.out.write('Hello world!')
 
 
-application = webapp.WSGIApplication(
-        [('/', pages.Index),
-            ('/preferences', pages.Preferences),
-            ('/add', pages.Add),
-            ('/delete', pages.Delete),
-            ('/again', pages.Again),
-            ('/restart', pages.Restart),
-            ('/rename', pages.Rename),
-            ('/editstart', pages.EditStart),
-            ('/editduration', pages.EditDuration),
-            ('/stop', pages.Stop)], debug=True)
+urls = [('/', pages.Index), ('/preferences', pages.Preferences)]
+urls.extend((('/activity%s' % url, handler) for url, handler in activity.urls))
+application = webapp.WSGIApplication(urls, debug=True)
 
 if __name__ == '__main__':
     wsgiref.handlers.CGIHandler().run(application)

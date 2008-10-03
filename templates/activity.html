@@ -3,10 +3,10 @@
     <td>{{ activity.localstart|date:"Y/m/d H:i" }}</td>
     {% if activity.stop %}
     <td>{{ activity.duration }}</td>
-    <td><a href="/restart">Restart</a></td>
-    <td><a href="/again">Again</a></td>
+    <td><a href="/activity/restart">Restart</a></td>
+    <td><a href="/activity/again">Again</a></td>
     {% else %}
-    <td><a href="/stop">Stop</a></td>
+    <td><a href="/activity/stop">Stop</a></td>
     {% endif %}
-    <td><a href="/delete">Delete</a></td>
+    <td><a href="/activity/delete">Delete</a></td>
 </tr>

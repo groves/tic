@@ -4,6 +4,10 @@ runtime: python
 api_version: 1
 
 handlers:
+- url: /favicon.ico
+  static_files: static/tic.ico
+  upload: static/tic.ico
+
 - url: /static
   static_dir: static
 
