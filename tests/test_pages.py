@@ -1,19 +1,12 @@
-import os
 from datetime import datetime, timedelta
 
-from BeautifulSoup import BeautifulSoup
 import pytz
-from fixture import GoogleDatastoreFixture
-from fixture.style import NamedDataStyle
 from nose.tools import eq_
 from webtest import TestApp
 
-from tic import application, model, pages
+from tic import application, pages
 from tic.model import Activity, UserPrefs, prefs
-from datasets import ActivityData
-
-os.environ['USER_EMAIL'] = "test@blah.com"
-datafixture = GoogleDatastoreFixture(env=model, style=NamedDataStyle())
+from datasets import ActivityData, make_data
 
 def test_empty():
     app = TestApp(application)
@@ -24,8 +17,7 @@ def test_empty():
 class TestPages:
     def setUp(self):
         self.app = TestApp(application)
-        self.data = datafixture.data(ActivityData)
-        self.data.setup()
+        self.data = make_data()
         self.act = Activity.all().filter("name =", ActivityData.working_on_tic.name)[0]
         self.key = self.act.key()
 
