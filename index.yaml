@@ -30,7 +30,7 @@ indexes:
   - name: start
     direction: desc
 
-# Used 6 times in query history.
+# Used 8 times in query history.
 - kind: Activity
   properties:
   - name: stop
@@ -38,7 +38,7 @@ indexes:
   - name: start
     direction: desc
 
-# Used 6 times in query history.
+# Used 8 times in query history.
 - kind: Activity
   properties:
   - name: stop

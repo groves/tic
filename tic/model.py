@@ -15,7 +15,7 @@ def format(value, unit):
     else:
         return ''
 
-duration_parser = re.compile("((?P<hours>\d+) hours? ?)?((?P<minutes>\d+) minutes?)?")
+duration_parser = re.compile(" *((?P<hours>\d+) *h(ours?)?)? *((?P<minutes>\d+) *m(inutes?)?)? *")
 hour = 60 * 60
 
 class Activity(db.Model):
@@ -31,6 +31,8 @@ class Activity(db.Model):
 
     def setDuration(self, newDuration):
         m = duration_parser.search(newDuration)
+        if not m.group("hours") and not m.group("minutes"):
+            raise ValueError("Invalid duration %s" % newDuration)
         hours = int(m.group("hours")) if m.group("hours") else 0
         minutes = int(m.group("minutes")) if m.group("minutes") else 0
         self.stop = self.start + timedelta(hours=hours, minutes=minutes)
