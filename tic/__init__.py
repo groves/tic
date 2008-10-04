@@ -9,7 +9,7 @@ class MainHandler(webapp.RequestHandler):
         self.response.out.write('Hello world!')
 
 
-urls = [('/', pages.Index), ('/preferences', pages.Preferences)]
+urls = [('/', pages.Index), ('/preferences', pages.Preferences), ('/report', pages.Report)]
 urls.extend((('/activity%s' % url, handler) for url, handler in activity.urls))
 application = webapp.WSGIApplication(urls, debug=True)
 

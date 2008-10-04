@@ -1,5 +1,6 @@
 import logging
 import os
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from pytz import common_timezones
@@ -19,6 +20,21 @@ class Index(webapp.RequestHandler):
         self.response.out.write(render("index",
             activities=Activity.foruser().filter("stop =", None).order("-start"),
             inactivities=Activity.foruser().filter("stop >", yesterday).order("-stop")))
+
+class Report(webapp.RequestHandler):
+    def getTime(self, param, default):
+        if param in self.request.params:
+            return datetime.strptime(self.request.params[param], "%Y/%m/%d")
+        return default
+
+    def get(self):
+        start = self.getTime("start", datetime.now() - timedelta(days=1))
+        end = self.getTime("end", datetime.now())
+        names = self.request.params.getall("name")
+        groups = defaultdict(list)
+        for activity in Activity.locate(start, end, *names):
+            groups[activity.start.date()].append(activity)
+        self.response.out.write(render("report", **locals()))
 
 class Preferences(webapp.RequestHandler):
     def get(self):

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Report{% endblock %}
+{% block head %}
+{% endblock %}
+{% block content %}
+<form action="/report" method="get" class="span-8 last">
+    <input type="text" name="name" />
+    <input type="text" name="start" value="{{ start|date:"Y/m/d" }}"/>
+    <input type="text" name="end" value="{{ end|date:"Y/m/d" }}"/>
+    <input type="submit" value="Generate" />
+</form>
+{% for group,activities in groups.iteritems %}
+<table class="span-16 last">
+    <tr>
+        <th>{{ group|date:"Y/m/d" }}</th>
+    </tr>
+    {% for activity in activities %}
+    {% include "activity.html" %}
+    {% endfor %}
+</table>
+{% endfor %}
+{% endblock %}
