@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="" />
+<title>enter and rename</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">enter and rename</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name</td>
+	<td>sample name</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//input[@value='Start']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//tr[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//tr/td[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>value</td>
+	<td>sample rename</td>
+</tr>
+<tr>
+	<td>keyPress</td>
+	<td>value</td>
+	<td>\13</td>
+</tr>
+<tr>
+	<td>waitForElementNotPresent</td>
+	<td>//tr/td[1]/form[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr/td[1]</td>
+	<td>sample rename</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Stop</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//table[2]/tbody/tr/td</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//tr/td[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>value</td>
+	<td>15 minutes</td>
+</tr>
+<tr>
+	<td>keyPress</td>
+	<td>value</td>
+	<td>\13</td>
+</tr>
+<tr>
+	<td>waitForElementNotPresent</td>
+	<td>//tr/td[1]/form[1]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForText</td>
+	<td>//tr/td[3]</td>
+	<td>15 minutes</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementNotPresent</td>
+	<td>//tr[1]</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
