@@ -17,8 +17,8 @@ class Index(webapp.RequestHandler):
     def get(self):
         yesterday = datetime.now() - timedelta(1)
         self.response.out.write(render("index",
-            activities=Activity.all().filter("user =", user()).filter("stop =", None).order("-start"),
-            inactivities=Activity.all().filter("stop >", yesterday).order("-stop")))
+            activities=Activity.foruser().filter("stop =", None).order("-start"),
+            inactivities=Activity.foruser().filter("stop >", yesterday).order("-stop")))
 
 class Preferences(webapp.RequestHandler):
     def get(self):

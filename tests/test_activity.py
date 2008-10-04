@@ -28,9 +28,6 @@ def test_bad_durations():
 def test_single_letter_difference():
     act = get_base()
     matches = Activity.locate(act.start, datetime.now(), 'Working')
-    print ActivityData.different_time_same_name.start
-    for m in matches:
-        print m
     eq_(1, len(matches))
     eq_(act.key(), iter(matches).next().key())
 
@@ -50,6 +47,12 @@ def test_earlier_start():
     matches = Activity.locate(act.start - timedelta(days=2), datetime.now(), 'Working on tic')
     eq_(2, len(matches))
     assert act.key() in set((m.key() for m in matches))
+
+def test_multiple_names():
+    act = get_base()
+    matches = Activity.locate(act.start, datetime.now(), "Working", "Horking")
+    eq_(2, len(matches))
+
 
 # In this section, we have tests that we really wish wouldn't fucking pass
 def test_single_letter_missing():

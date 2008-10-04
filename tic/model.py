@@ -51,7 +51,7 @@ class Activity(search.SearchableModel):
     @classmethod
     def locate(cls, start, end, *names):
         logging.info("Searching for activities from %s to %s" % (start, end))
-        base = cls.all().filter("user =", user()).filter("start >=", start).filter("start <=", end)
+        base = cls.foruser().filter("start >=", start).filter("start <=", end)
         activities = set()
         for name in names:
             matches = set(base.search(name))
@@ -59,6 +59,10 @@ class Activity(search.SearchableModel):
             activities.update(matches)
         logging.info("Found %s total" % len(activities))
         return activities
+
+    @classmethod
+    def foruser(cls):
+        return Activity.all().filter("user =", users.get_current_user())
 
 
 def user():
