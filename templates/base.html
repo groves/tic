@@ -9,6 +9,11 @@
         <script type="text/javascript" src="/static/jquery.form.min.js"></script> 
         <script type="text/javascript" src="/static/jquery.jeditable.min.js"></script> 
         <script type="text/javascript" src="/static/tic.js"></script> 
+        <script type="text/javascript">
+            $(document).ready(function() {
+                    $(".activity").each(function() { addActivityRowListeners($(this)); });
+            });
+        </script>
         <link rel="icon" type="image/png" href="/static/tic.png" />
         {% block head %}{% endblock %}
     </head>
