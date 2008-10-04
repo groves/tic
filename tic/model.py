@@ -30,8 +30,8 @@ class Activity(search.SearchableModel):
 
     def getDuration(self):
         duration = self.stop - self.start
-        return '%s%s' % (format(duration.seconds / hour, 'hour'),
-                format(duration.seconds % hour / 60, 'minute'))
+        return ('%s%s' % (format(duration.seconds / hour, 'hour'),
+                format(duration.seconds % hour / 60, 'minute'))).strip()
 
     def setDuration(self, newDuration):
         m = duration_parser.search(newDuration)
