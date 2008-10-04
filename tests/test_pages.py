@@ -6,7 +6,7 @@ from webtest import TestApp
 
 from tic import application, pages
 from tic.model import Activity, UserPrefs, prefs
-from datasets import ActivityData, make_data
+from datasets import ActivityData, get_base, make_data
 
 def test_empty():
     app = TestApp(application)
@@ -18,7 +18,7 @@ class TestPages:
     def setUp(self):
         self.app = TestApp(application)
         self.data = make_data()
-        self.act = Activity.all().filter("name =", ActivityData.working_on_tic.name)[0]
+        self.act = get_base()
         self.key = self.act.key()
 
     def tearDown(self):
@@ -30,7 +30,7 @@ class TestPages:
 
     def testDisplayedActivities(self):
         resp = self.app.get("/")
-        eq_(ActivityData.working_on_tic.name, resp.html.find("table", id="active").tr.td.string)
+        eq_(ActivityData.horking_on_tic.name, resp.html.find("table", id="active").tr.td.string)
         eq_(ActivityData.sleeping.name, resp.html.find("table", id="inactive").tr.td.string)
 
     def testAdd(self):
@@ -62,7 +62,7 @@ class TestPages:
     def testAgain(self):
         response = self.app.post("/activity/again", {'key': self.key})
         response.mustcontain("true", self.act.name)
-        assert Activity.all().filter("user =", pages.user()).filter("name =", self.act.name).count() == 2
+        assert Activity.all().filter("user =", pages.user()).filter("name =", self.act.name).count() == 3
 
     def testRename(self):
         response = self.app.post("/activity/rename", {'key': self.key, 'value':'new name'})

@@ -5,7 +5,7 @@ from datetime import timedelta
 import pytz
 
 from google.appengine.api import users
-from google.appengine.ext import db
+from google.appengine.ext import db, search
 
 def format(value, unit):
     if value > 1:
@@ -18,11 +18,15 @@ def format(value, unit):
 duration_parser = re.compile(" *((?P<hours>\d+) *h(ours?)?)? *((?P<minutes>\d+) *m(inutes?)?)? *")
 hour = 60 * 60
 
-class Activity(db.Model):
+class Activity(search.SearchableModel):
     user = db.UserProperty()
     name = db.StringProperty()
     start = db.DateTimeProperty(auto_now_add=True)
     stop = db.DateTimeProperty()
+
+    def __str__(self):
+        return "Activity(name=%s, user=%s, start=%s, stop=%s)" % (self.name, self.user, self.start, self.stop)
+
 
     def getDuration(self):
         duration = self.stop - self.start
@@ -43,6 +47,19 @@ class Activity(db.Model):
         tz = prefs().timezone
         return tz.normalize(self.start.replace(tzinfo=pytz.utc).astimezone(tz))
     localstart = property(getLocalstart)
+
+    @classmethod
+    def locate(cls, start, end, *names):
+        logging.info("Searching for activities from %s to %s" % (start, end))
+        base = cls.all().filter("user =", user()).filter("start >=", start).filter("start <=", end)
+        activities = set()
+        for name in names:
+            matches = set(base.search(name))
+            logging.info("Found %s matches for %s" % (len(matches), name))
+            activities.update(matches)
+        logging.info("Found %s total" % len(activities))
+        return activities
+
 
 def user():
     return users.get_current_user()
