@@ -13,7 +13,30 @@
                         alert(response.reason);
                     }
                 }});
-            });
+
+            function autocompleteCollector(selector, parser) {
+                // There's probably a better way to make a list of uniques using Javascript, but
+                // this is all I'm coming up with
+                var names = {};
+                $(selector).each(function (){
+                    var bits = parser($(this).text());
+                    for (i = 0; i < bits.length; i++) {
+                        names[bits[i]] = true;
+                    }
+                });
+                var namearr = [];
+                for (name in names) {
+                    namearr.push(name);
+                }
+                return namearr;
+            }
+            var nameCompletions = autocompleteCollector(".activity td:first-child",
+                    function(text) { return [text]; });
+            $("#add_activity input").eq(0).autocomplete(nameCompletions);
+            var tagCompletions = autocompleteCollector(".activity td:nth-child(2)",
+                    function(text) { return text.split(", "); });
+             $("#add_activity input").eq(1).autocomplete(tagCompletions);
+     });
 </script>
 {% endblock %}
 {% block content %}
