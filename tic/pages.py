@@ -32,7 +32,7 @@ class Report(webapp.RequestHandler):
         end = self.getTime("end", datetime.now())
         names = self.request.params.getall("name")
         groups = defaultdict(list)
-        for activity in Activity.locate(start, end, *names):
+        for activity in Activity.locate(start, end, names):
             groups[activity.start.date()].append(activity)
         self.response.out.write(render("report", **locals()))
 

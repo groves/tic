@@ -27,37 +27,43 @@ def test_bad_durations():
 
 def test_single_letter_difference():
     act = get_base()
-    matches = Activity.locate(act.start, datetime.now(), 'Working')
+    matches = Activity.locate(act.start, datetime.now(), ['Working'])
     eq_(1, len(matches))
     eq_(act.key(), iter(matches).next().key())
 
+def test_tag():
+    act = get_base()
+    matches = Activity.locate(tags=['tic'])
+    eq_(3, len(matches))
+    assert act.key() in set((m.key() for m in matches))
+
 def test_case_insensitive():
     act = get_base()
-    matches = Activity.locate(act.start, datetime.now(), 'working')
+    matches = Activity.locate(act.start, datetime.now(), ['working'])
     eq_(1, len(matches))
 
 def test_same_ending():
     act = get_base()
-    matches = Activity.locate(act.start, datetime.now(), 'on tic')
+    matches = Activity.locate(act.start, datetime.now(), ['on tic'])
     eq_(2, len(matches))
     assert act.key() in set((m.key() for m in matches))
 
 def test_earlier_start():
     act = get_base()
-    matches = Activity.locate(act.start - timedelta(days=2), datetime.now(), 'Working on tic')
+    matches = Activity.locate(act.start - timedelta(days=2), datetime.now(), ['Working on tic'])
     eq_(2, len(matches))
     assert act.key() in set((m.key() for m in matches))
 
 def test_multiple_names():
     act = get_base()
-    matches = Activity.locate(act.start, datetime.now(), "Working", "Horking")
+    matches = Activity.locate(act.start, datetime.now(), ["Working", "Horking"])
     eq_(2, len(matches))
 
 
 # In this section, we have tests that we really wish wouldn't fucking pass
 def test_single_letter_missing():
     act = get_base()
-    matches = Activity.locate(act.start, datetime.now(), 'orking')
+    matches = Activity.locate(act.start, datetime.now(), ['orking'])
     eq_(0, len(matches))
 
 

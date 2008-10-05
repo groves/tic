@@ -23,9 +23,11 @@ class Activity(search.SearchableModel):
     name = db.StringProperty()
     start = db.DateTimeProperty(auto_now_add=True)
     stop = db.DateTimeProperty()
+    tags = db.StringListProperty()
 
     def __str__(self):
-        return "Activity(name=%s, user=%s, start=%s, stop=%s)" % (self.name, self.user, self.start, self.stop)
+        return "Activity(name=%s, user=%s, start=%s, stop=%s, tags=%s)" % (self.name, self.user,
+                self.start, self.stop, self.tags)
 
 
     def getDuration(self):
@@ -49,15 +51,21 @@ class Activity(search.SearchableModel):
     localstart = property(getLocalstart)
 
     @classmethod
-    def locate(cls, start, end, *names):
-        logging.info("Searching for activities from %s to %s" % (start, end))
-        base = cls.foruser().filter("start >=", start).filter("start <=", end)
-        activities = set()
-        for name in names:
-            matches = set(base.search(name))
-            logging.info("Found %s matches for %s" % (len(matches), name))
-            activities.update(matches)
-        logging.info("Found %s total" % len(activities))
+    def locate(cls, start=None, end=None, names=[], tags=[]):
+        q = cls.foruser()
+        if start:
+            q = q.filter("start >=", start)
+        if end:
+            q = q.filter("start <=", end)
+        for tag in tags:
+            q = q.filter("tags =", tag)
+        if names:
+            activities = set()
+            for name in names:
+                matches = set(q.search(name))
+                activities.update(matches)
+        else:
+            activities = set(q)
         return activities
 
     @classmethod
