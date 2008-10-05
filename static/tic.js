@@ -50,4 +50,9 @@ function addActivityRowListeners(activityRow) {
         addRowLinkListener(activityRow, "/again",
                 function(response) { addActivity(response, "active"); });
     }
+    for (ii = 0; ii < rowAddListeners.length; ii++) {
+        rowAddListeners[ii](activityRow);
+    }
 }
+
+var rowAddListeners = [];
