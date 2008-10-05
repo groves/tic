@@ -17,6 +17,7 @@ def format(value, unit):
 
 duration_parser = re.compile(" *((?P<hours>\d+) *h(ours?)?)? *((?P<minutes>\d+) *m(inutes?)?)? *")
 hour = 60 * 60
+tag_parser = re.compile("\w+")
 
 class Activity(search.SearchableModel):
     user = db.UserProperty()
@@ -72,6 +73,9 @@ class Activity(search.SearchableModel):
     def foruser(cls):
         return Activity.all().filter("user =", users.get_current_user())
 
+    @classmethod
+    def parsetags(cls, tags):
+        return tag_parser.findall(tags)
 
 def user():
     return users.get_current_user()

@@ -33,11 +33,23 @@ class TestPages:
         eq_(ActivityData.horking_on_tic.name, resp.html.find("table", id="active").tr.td.string)
         eq_(ActivityData.sleeping.name, resp.html.find("table", id="inactive").tr.td.string)
 
-    def testAdd(self):
-        response = self.app.post('/activity/', {'name': 'new activity'})
-        response.mustcontain("true", 'new activity')
+    def testAddNoName(self):
         response = self.app.post('/activity/')
         response.mustcontain("false", "name must be given")
+
+    def testAddOneTag(self):
+        response = self.app.post('/activity/', {'name': 'new activity', 'tags':'newtag'})
+        response.mustcontain("true", 'new activity', 'newtag')
+
+    def testAddMultipleTags(self):
+        response = self.app.post('/activity/', {'name': 'new activity', 'tags':'newtag second'})
+        response.mustcontain("true", 'new activity', 'newtag, second')
+        response = self.app.post('/activity/', {'name': 'new activity', 'tags':' newtag,  second '})
+        response.mustcontain("true", 'new activity', 'newtag, second')
+
+    def testAddNoTags(self):
+        response = self.app.post('/activity/', {'name': 'new activity', 'tags':'  '})
+        response.mustcontain("true", 'new activity')
 
     def testDelete(self):
         response = self.app.post('/activity/delete', {'key': self.key})
@@ -67,6 +79,14 @@ class TestPages:
     def testRename(self):
         response = self.app.post("/activity/rename", {'key': self.key, 'value':'new name'})
         assert Activity.get(self.key).name == "new name"
+
+    def testRemoveTags(self):
+        response = self.app.post("/activity/tags", {'key': self.key, 'value':''})
+        eq_([], Activity.get(self.key).tags)
+
+    def testAddTags(self):
+        response = self.app.post("/activity/tags", {'key': self.key, 'value':'new tag values'})
+        eq_(['new', 'tag', 'values'], Activity.get(self.key).tags)
 
     def testEditStart(self):
         newstart = datetime(2008, 9, 17, 12, 15)

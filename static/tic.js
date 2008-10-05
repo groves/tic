@@ -34,7 +34,8 @@ function addTextEditor(activityRow, cell, link) {
 
 function addActivityRowListeners(activityRow) {
     addTextEditor(activityRow, $("td", activityRow).eq(0), "/rename");
-    addTextEditor(activityRow, $("td", activityRow).eq(1), "/start");
+    addTextEditor(activityRow, $("td", activityRow).eq(1), "/tags");
+    addTextEditor(activityRow, $("td", activityRow).eq(2), "/start");
     addRowLinkListener(activityRow, "/delete", function() { activityRow.remove(); });
     if ($('a[href="/activity/restart"]', activityRow).length == 0) {
         addRowLinkListener(activityRow, "/stop",
@@ -43,7 +44,7 @@ function addActivityRowListeners(activityRow) {
                     addActivity(response, "inactive");
                 });
     } else {
-        addTextEditor(activityRow, $("td", activityRow).eq(2), "/duration");
+        addTextEditor(activityRow, $("td", activityRow).eq(3), "/duration");
         addRowLinkListener(activityRow, "/restart",
                 function(response) { activityRow.remove(); addActivity(response, "active"); });
         addRowLinkListener(activityRow, "/again",

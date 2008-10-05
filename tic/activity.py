@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 
 from pytz import utc
@@ -30,7 +31,8 @@ class JsonHandler(webapp.RequestHandler):
 
 class Add(JsonHandler):
     def json(self):
-        activity = Activity(name=self.require("name"), user=user())
+        activity = Activity(name=self.require("name"), user=user(),
+            tags=Activity.parsetags(self.request.get("tags", "")))
         activity.put()
         return {"activity":render("activity", activity=activity)}
 
@@ -65,6 +67,12 @@ class Rename(ActivityModifier):
         activity.name = self.require("value")
         return activity
 
+class Tags(ActivityModifier):
+    def modify(self, activity):
+        val = self.request.get("value")
+        activity.tags = Activity.parsetags(self.require("value")) if val else []
+        return activity
+
 class EditStart(ActivityModifier):
     def modify(self, activity):
         newstart = datetime.strptime(self.require("value"), "%Y/%m/%d %H:%M")
@@ -83,4 +91,5 @@ urls = [('/', Add),
     ('/rename', Rename),
     ('/start', EditStart),
     ('/duration', EditDuration),
+    ('/tags', Tags),
     ('/stop', Stop)]

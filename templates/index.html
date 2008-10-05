@@ -17,8 +17,11 @@
 </script>
 {% endblock %}
 {% block content %}
-<form id="add_activity" action="/activity/" method="post" class="span-8 last">
+<form id="add_activity" action="/activity/" method="post" class="span-16 last">
+    <label for="name">Name</label>
     <input type="text" name="name" />
+    <label for="tags">Tags</label>
+    <input type="text" name="tags" />
     <input type="submit" value="Start" />
 </form>
 <table id="active" class="span-16 last">

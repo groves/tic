@@ -1,5 +1,6 @@
 <tr id="{{ activity.key }}" class="activity">
     <td>{{ activity.name }}</td> 
+    <td>{{ activity.tags|join:", " }}</td>
     <td>{{ activity.localstart|date:"Y/m/d H:i" }}</td>
     {% if activity.stop %}
     <td>{{ activity.duration }}</td>
